@@ -1,0 +1,616 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>WS Demo - Blog</title>
+  <style>
+    :root {
+      --bg: #f3f4f6;
+      --card: #ffffff;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --border: #d1d5db;
+      --danger: #b91c1c;
+      --danger-bg: #fef2f2;
+      --ok: #166534;
+      --ok-bg: #f0fdf4;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 24px;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      color: var(--text);
+      background: linear-gradient(180deg, #f8fafc 0%, var(--bg) 100%);
+      line-height: 1.45;
+    }
+
+    h1, h2, h3 {
+      margin: 0 0 10px;
+    }
+
+    p {
+      margin: 0 0 12px;
+    }
+
+    .layout {
+      display: grid;
+      gap: 16px;
+      grid-template-columns: 1fr;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+    }
+
+    .grid-2 {
+      display: grid;
+      gap: 8px;
+      grid-template-columns: 1fr;
+    }
+
+    .control {
+      width: 100%;
+      padding: 9px 10px;
+      border: 1px solid #bfc5cf;
+      border-radius: 7px;
+      background: #fff;
+    }
+
+    .actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 8px;
+    }
+
+    .btn {
+      border: 1px solid #9aa3af;
+      border-radius: 7px;
+      padding: 8px 11px;
+      background: #f8fafc;
+      cursor: pointer;
+    }
+
+    .btn:hover { background: #eef2f7; }
+
+    .btn-danger {
+      border-color: var(--danger);
+      color: var(--danger);
+      background: var(--danger-bg);
+    }
+
+    .btn-success {
+      border-color: var(--ok);
+      color: var(--ok);
+      background: var(--ok-bg);
+    }
+
+    .muted {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    #log {
+      min-height: 170px;
+      max-height: 300px;
+      overflow: auto;
+      background: #0f172a;
+      color: #22c55e;
+      border-radius: 8px;
+      padding: 10px;
+      white-space: pre-wrap;
+      font-family: Consolas, monospace;
+      font-size: 13px;
+      border: 1px solid #1e293b;
+    }
+
+    ul {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    li {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      border-bottom: 1px solid #eceef2;
+      padding: 9px 0;
+    }
+
+    .post-label {
+      flex: 1;
+      min-width: 0;
+      word-break: break-word;
+    }
+
+    .section-title {
+      margin-top: 10px;
+      padding-top: 8px;
+      border-top: 1px dashed #dbe1ea;
+      font-size: 14px;
+      color: #334155;
+      font-weight: 700;
+    }
+
+    @media (min-width: 980px) {
+      .layout {
+        grid-template-columns: 1.15fr 1fr;
+      }
+      .grid-2 {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h1>WebSocket Demo - Blog</h1>
+  <p class="muted">Page de test complete: auth JWT, create/delete de posts REST et evenements WS.</p>
+
+  <div class="layout">
+    <section class="card">
+      <h2>Authentification</h2>
+
+      <div class="section-title">Register</div>
+      <div class="grid-2">
+        <input id="register-username" class="control" type="text" placeholder="username" />
+        <input id="register-email" class="control" type="email" placeholder="email" />
+      </div>
+      <div class="grid-2" style="margin-top:8px;">
+        <input id="register-password" class="control" type="password" placeholder="password" />
+        <input id="register-password-confirm" class="control" type="password" placeholder="password_confirm" />
+      </div>
+      <div class="actions">
+        <button id="register-btn" class="btn" type="button">Register</button>
+      </div>
+
+      <div class="section-title">Login</div>
+      <div class="grid-2">
+        <input id="login-email" class="control" type="email" placeholder="email" />
+        <input id="login-password" class="control" type="password" placeholder="password" />
+      </div>
+      <div class="actions">
+        <button id="login-btn" class="btn" type="button">Login</button>
+        <button id="refresh-btn" class="btn" type="button">Refresh Access</button>
+        <button id="logout-btn" class="btn" type="button">Logout</button>
+      </div>
+
+      <div class="section-title">Tokens JWT</div>
+      <input id="access-token" class="control" type="text" placeholder="Access token" />
+      <input id="refresh-token" class="control" type="text" placeholder="Refresh token" style="margin-top:8px;" />
+
+      <div class="section-title">Reset password</div>
+      <div class="grid-2">
+        <input id="reset-email" class="control" type="email" placeholder="email" />
+        <button id="reset-request-btn" class="btn" type="button">Request reset</button>
+      </div>
+      <div class="grid-2" style="margin-top:8px;">
+        <input id="reset-uid" class="control" type="text" placeholder="uid" />
+        <input id="reset-token" class="control" type="text" placeholder="token" />
+      </div>
+      <div class="grid-2" style="margin-top:8px;">
+        <input id="reset-new-password" class="control" type="password" placeholder="new_password" />
+        <input id="reset-new-password-confirm" class="control" type="password" placeholder="new_password_confirm" />
+      </div>
+      <div class="actions">
+        <button id="reset-confirm-btn" class="btn" type="button">Confirm reset</button>
+      </div>
+
+      <p class="muted" style="margin-top:10px;">DELETE et CREATE demandent un access token valide (Bearer).</p>
+    </section>
+
+    <section class="card">
+      <h2>Posts REST + WebSocket</h2>
+
+      <div class="section-title">Create post</div>
+      <input id="post-title" class="control" type="text" placeholder="title" />
+      <textarea id="post-content" class="control" rows="4" placeholder="content" style="margin-top:8px;"></textarea>
+      <select id="post-status" class="control" style="margin-top:8px;">
+        <option value="draft">draft</option>
+        <option value="published">published</option>
+      </select>
+      <div class="actions">
+        <button id="create-post-btn" class="btn btn-success" type="button">Create post</button>
+      </div>
+
+      <div class="section-title">Posts existants</div>
+      <ul id="posts"></ul>
+
+      <div class="section-title">Messages WebSocket</div>
+      <div id="log"></div>
+    </section>
+  </div>
+
+  <script>
+    const API_BASE = `${window.location.origin}/api`;
+    const apiPostsUrl = `${API_BASE}/posts/`;
+    const authRegisterUrl = `${API_BASE}/auth/register/`;
+    const authLoginUrl = `${API_BASE}/auth/login/`;
+    const authRefreshUrl = `${API_BASE}/auth/refresh/`;
+    const authResetRequestUrl = `${API_BASE}/auth/password-reset/request/`;
+    const authResetConfirmUrl = `${API_BASE}/auth/password-reset/confirm/`;
+
+    const wsScheme = window.location.protocol === "https:" ? "wss" : "ws";
+    const wsUrl = `${wsScheme}://${window.location.host}/ws/blog/`;
+
+    const accessTokenStorageKey = "ws_demo_access_token";
+    const refreshTokenStorageKey = "ws_demo_refresh_token";
+
+    const postsUl = document.getElementById("posts");
+    const logBox = document.getElementById("log");
+
+    const registerUsernameInput = document.getElementById("register-username");
+    const registerEmailInput = document.getElementById("register-email");
+    const registerPasswordInput = document.getElementById("register-password");
+    const registerPasswordConfirmInput = document.getElementById("register-password-confirm");
+
+    const loginEmailInput = document.getElementById("login-email");
+    const loginPasswordInput = document.getElementById("login-password");
+
+    const accessTokenInput = document.getElementById("access-token");
+    const refreshTokenInput = document.getElementById("refresh-token");
+
+    const resetEmailInput = document.getElementById("reset-email");
+    const resetUidInput = document.getElementById("reset-uid");
+    const resetTokenInput = document.getElementById("reset-token");
+    const resetNewPasswordInput = document.getElementById("reset-new-password");
+    const resetNewPasswordConfirmInput = document.getElementById("reset-new-password-confirm");
+
+    const postTitleInput = document.getElementById("post-title");
+    const postContentInput = document.getElementById("post-content");
+    const postStatusInput = document.getElementById("post-status");
+
+    const registerBtn = document.getElementById("register-btn");
+    const loginBtn = document.getElementById("login-btn");
+    const refreshBtn = document.getElementById("refresh-btn");
+    const logoutBtn = document.getElementById("logout-btn");
+    const resetRequestBtn = document.getElementById("reset-request-btn");
+    const resetConfirmBtn = document.getElementById("reset-confirm-btn");
+    const createPostBtn = document.getElementById("create-post-btn");
+
+    accessTokenInput.value = localStorage.getItem(accessTokenStorageKey) || "";
+    refreshTokenInput.value = localStorage.getItem(refreshTokenStorageKey) || "";
+
+    function log(message) {
+      const now = new Date().toLocaleTimeString();
+      logBox.textContent += `[${now}] ${message}\n`;
+      logBox.scrollTop = logBox.scrollHeight;
+    }
+
+    async function parseJsonSafe(response) {
+      try {
+        return await response.json();
+      } catch (_) {
+        return null;
+      }
+    }
+
+    function extractErrorMessage(data, fallback) {
+      if (!data) return fallback;
+      if (typeof data === "string") return data;
+      if (data.detail) return data.detail;
+      const firstKey = Object.keys(data)[0];
+      if (!firstKey) return fallback;
+      const value = data[firstKey];
+      if (Array.isArray(value) && value.length > 0) return `${firstKey}: ${value[0]}`;
+      return `${firstKey}: ${String(value)}`;
+    }
+
+    function getAccessToken() {
+      return accessTokenInput.value.trim();
+    }
+
+    function getRefreshToken() {
+      return refreshTokenInput.value.trim();
+    }
+
+    function setTokens(access, refresh) {
+      accessTokenInput.value = access || "";
+      refreshTokenInput.value = refresh || "";
+
+      if (access) localStorage.setItem(accessTokenStorageKey, access);
+      else localStorage.removeItem(accessTokenStorageKey);
+
+      if (refresh) localStorage.setItem(refreshTokenStorageKey, refresh);
+      else localStorage.removeItem(refreshTokenStorageKey);
+    }
+
+    function authHeaders(extra = {}) {
+      const token = getAccessToken();
+      const headers = { ...extra };
+      if (token) headers.Authorization = `Bearer ${token}`;
+      return headers;
+    }
+
+    async function register() {
+      const username = registerUsernameInput.value.trim();
+      const email = registerEmailInput.value.trim();
+      const password = registerPasswordInput.value;
+      const password_confirm = registerPasswordConfirmInput.value;
+
+      if (!username || !email || !password || !password_confirm) {
+        log("Register erreur: username/email/password requis.");
+        return;
+      }
+
+      const response = await fetch(authRegisterUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, email, password, password_confirm }),
+      });
+
+      const data = await parseJsonSafe(response);
+      if (!response.ok) {
+        log(`Register erreur: ${extractErrorMessage(data, `HTTP ${response.status}`)}`);
+        return;
+      }
+
+      setTokens(data.access, data.refresh);
+      loginEmailInput.value = email;
+      log(`Register OK: ${email}`);
+    }
+
+    async function login() {
+      const email = loginEmailInput.value.trim();
+      const password = loginPasswordInput.value;
+
+      if (!email || !password) {
+        log("Login erreur: email/password requis.");
+        return;
+      }
+
+      const response = await fetch(authLoginUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await parseJsonSafe(response);
+      if (!response.ok) {
+        log(`Login erreur: ${extractErrorMessage(data, `HTTP ${response.status}`)}`);
+        return;
+      }
+
+      setTokens(data.access, data.refresh);
+      log(`Login OK: ${data.user?.email || email}`);
+    }
+
+    async function refreshAccess() {
+      const refresh = getRefreshToken();
+      if (!refresh) {
+        log("Refresh erreur: refresh token manquant.");
+        return;
+      }
+
+      const response = await fetch(authRefreshUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ refresh }),
+      });
+
+      const data = await parseJsonSafe(response);
+      if (!response.ok) {
+        log(`Refresh erreur: ${extractErrorMessage(data, `HTTP ${response.status}`)}`);
+        return;
+      }
+
+      setTokens(data.access, refresh);
+      log("Refresh access OK");
+    }
+
+    function logout() {
+      setTokens("", "");
+      log("Logout OK");
+    }
+
+    async function requestReset() {
+      const email = resetEmailInput.value.trim();
+      if (!email) {
+        log("Reset request erreur: email requis.");
+        return;
+      }
+
+      const response = await fetch(authResetRequestUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+
+      const data = await parseJsonSafe(response);
+      if (!response.ok) {
+        log(`Reset request erreur: ${extractErrorMessage(data, `HTTP ${response.status}`)}`);
+        return;
+      }
+
+      if (data?.reset_uid) resetUidInput.value = data.reset_uid;
+      if (data?.reset_token) resetTokenInput.value = data.reset_token;
+      log(data?.detail || "Reset request OK");
+      if (data?.reset_uid && data?.reset_token) {
+        log("DEBUG reset payload recu (mode DEBUG)");
+      }
+    }
+
+    async function confirmReset() {
+      const uid = resetUidInput.value.trim();
+      const token = resetTokenInput.value.trim();
+      const new_password = resetNewPasswordInput.value;
+      const new_password_confirm = resetNewPasswordConfirmInput.value;
+
+      if (!uid || !token || !new_password || !new_password_confirm) {
+        log("Reset confirm erreur: uid/token/new_password requis.");
+        return;
+      }
+
+      const response = await fetch(authResetConfirmUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ uid, token, new_password, new_password_confirm }),
+      });
+
+      const data = await parseJsonSafe(response);
+      if (!response.ok) {
+        log(`Reset confirm erreur: ${extractErrorMessage(data, `HTTP ${response.status}`)}`);
+        return;
+      }
+
+      log(data?.detail || "Password reset OK");
+    }
+
+    function removePostFromList(postId) {
+      const node = document.getElementById(`post-${postId}`);
+      if (node) node.remove();
+    }
+
+    function addPostToList(post) {
+      if (!post || typeof post.id === "undefined") return;
+      removePostFromList(post.id);
+
+      const li = document.createElement("li");
+      li.id = `post-${post.id}`;
+
+      const label = document.createElement("span");
+      label.className = "post-label";
+      label.textContent = `#${post.id} - ${post.title} (${post.status})`;
+
+      const deleteBtn = document.createElement("button");
+      deleteBtn.type = "button";
+      deleteBtn.className = "btn btn-danger";
+      deleteBtn.textContent = "Supprimer";
+      deleteBtn.addEventListener("click", () => deletePost(post.id));
+
+      li.appendChild(label);
+      li.appendChild(deleteBtn);
+      postsUl.prepend(li);
+    }
+
+    async function loadPosts() {
+      const response = await fetch(apiPostsUrl);
+      if (!response.ok) {
+        log(`REST erreur load posts: HTTP ${response.status}`);
+        return;
+      }
+
+      const payload = await parseJsonSafe(response);
+      const posts = Array.isArray(payload) ? payload : (payload?.results || []);
+
+      postsUl.innerHTML = "";
+      posts.forEach(addPostToList);
+
+      if (Array.isArray(payload)) {
+        log(`REST OK: ${posts.length} post(s) charges (liste simple)`);
+      } else {
+        log(`REST OK: ${posts.length} post(s) sur la page (pagination active)`);
+      }
+    }
+
+    async function createPost() {
+      const title = postTitleInput.value.trim();
+      const content = postContentInput.value.trim();
+      const status = postStatusInput.value;
+
+      if (!title || !content) {
+        log("Create erreur: title/content requis.");
+        return;
+      }
+
+      const token = getAccessToken();
+      if (!token) {
+        log("Create refuse: access token manquant.");
+        return;
+      }
+
+      const response = await fetch(apiPostsUrl, {
+        method: "POST",
+        headers: authHeaders({ "Content-Type": "application/json" }),
+        body: JSON.stringify({ title, content, status }),
+      });
+
+      const data = await parseJsonSafe(response);
+      if (!response.ok) {
+        log(`Create erreur: ${extractErrorMessage(data, `HTTP ${response.status}`)}`);
+        return;
+      }
+
+      addPostToList(data);
+      log(`Create OK post #${data.id}`);
+      postTitleInput.value = "";
+      postContentInput.value = "";
+      postStatusInput.value = "draft";
+    }
+
+    async function deletePost(postId) {
+      const token = getAccessToken();
+      if (!token) {
+        log("DELETE refuse: access token manquant.");
+        return;
+      }
+
+      const response = await fetch(`${apiPostsUrl}${postId}/`, {
+        method: "DELETE",
+        headers: authHeaders(),
+      });
+
+      if (response.status === 204) {
+        removePostFromList(postId);
+        log(`DELETE OK post #${postId}`);
+        return;
+      }
+
+      const data = await parseJsonSafe(response);
+      log(`DELETE erreur #${postId}: ${extractErrorMessage(data, `HTTP ${response.status}`)}`);
+    }
+
+    let ws = null;
+    let reconnectTimer = null;
+
+    function connectWs() {
+      if (reconnectTimer) {
+        clearTimeout(reconnectTimer);
+        reconnectTimer = null;
+      }
+
+      ws = new WebSocket(wsUrl);
+
+      ws.onopen = () => log("WS connecte");
+      ws.onerror = () => log("WS erreur");
+      ws.onclose = () => {
+        log("WS deconnecte, reconnexion dans 1.5s...");
+        reconnectTimer = setTimeout(connectWs, 1500);
+      };
+      ws.onmessage = (event) => {
+        log(`WS message: ${event.data}`);
+        try {
+          const data = JSON.parse(event.data);
+          if (data.event === "post_created" || data.event === "post_updated") {
+            addPostToList({ id: data.id, title: data.title, status: data.status });
+          }
+          if (data.event === "post_deleted") {
+            removePostFromList(data.id);
+          }
+        } catch (_) {
+          // ignore non JSON WS payloads
+        }
+      };
+    }
+
+    registerBtn.addEventListener("click", register);
+    loginBtn.addEventListener("click", login);
+    refreshBtn.addEventListener("click", refreshAccess);
+    logoutBtn.addEventListener("click", logout);
+    resetRequestBtn.addEventListener("click", requestReset);
+    resetConfirmBtn.addEventListener("click", confirmReset);
+    createPostBtn.addEventListener("click", createPost);
+
+    connectWs();
+    loadPosts();
+  </script>
+</body>
+</html>
