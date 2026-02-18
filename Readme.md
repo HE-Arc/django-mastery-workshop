@@ -12,7 +12,7 @@ Objectif: partir d un projet Django + DRF et arriver a:
 - une doc Swagger
 - un event WebSocket envoye a la creation d un post
 
-## Parcours modulaire (nouveau)
+## Parcours modulaire 
 
 Tu peux aussi suivre le cours par modules separes dans `docs/`:
 
