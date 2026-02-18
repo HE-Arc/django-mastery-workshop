@@ -442,3 +442,9 @@ Important:
 - DRF ViewSets: https://www.django-rest-framework.org/api-guide/viewsets/
 - drf-spectacular: https://drf-spectacular.readthedocs.io/
 - Django Channels: https://channels.readthedocs.io/
+
+
+## Auteur et supervision
+
+- Auteur: ABRAHAM RICARDO HERNANDEZ SOMPARE
+- Concu sous la supervision de David Grunenwald
