@@ -8,3 +8,7 @@ env/
 venv/
 .venv/
 ENV/
+
+# Generated book files
+Livre-*.docx
+Livre-*.pdf

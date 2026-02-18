@@ -1,4 +1,9 @@
-# Cours Django + DRF + Swagger + WebSocket (Step by Step)
+# django-mastery-workshop
+
+Workshop Django academique concu pour apprendre a construire une API robuste, securisee et temps reel, de la base CRUD jusqu au deploiement.
+
+**Auteur :** ABRAHAM RICARDO HERNANDEZ SOMPARE  
+**Supervision :** David Grunenwald
 
 Ce README suit un format tutorial pas a pas.  
 Objectif: partir d un projet Django + DRF et arriver a:
