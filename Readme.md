@@ -30,7 +30,7 @@ Version enseignant: `docs/teacher/README.md`
 ## Sommaire
 
 - [django-mastery-workshop](#django-mastery-workshop)
-  - [Parcours modulaire (nouveau)](#parcours-modulaire-nouveau)
+  - [Parcours modulaire](#parcours-modulaire)
   - [Sommaire](#sommaire)
   - [Step 0 - Prerequis](#step-0---prerequis)
   - [Step 1 - Creer et activer l environnement](#step-1---creer-et-activer-l-environnement)
